@@ -1,0 +1,347 @@
+openapi: 3.1.0
+info:
+  title: Personal Assistant MVP API
+  version: 0.1.0
+  description: ChatGPT Actions API for a personal assistant task pool backed by Feishu Bitable and Google Calendar.
+servers:
+  - url: /
+    description: Same origin as the hosted OpenAPI document.
+security:
+  - bearerAuth: []
+paths:
+  /api/health:
+    get:
+      operationId: healthCheck
+      summary: 健康检查
+      security: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+  /api/items:
+    post:
+      operationId: createItem
+      summary: 新增事项到飞书多维表
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssistantItemInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item:
+                    $ref: "#/components/schemas/AssistantItem"
+    get:
+      operationId: listItems
+      summary: 查询事项
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+          description: 可传单个状态、逗号分隔状态，或“未完成”。
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: type
+          in: query
+          schema:
+            type: string
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: priority
+          in: query
+          schema:
+            type: string
+        - name: keyword
+          in: query
+          schema:
+            type: string
+        - name: include_empty
+          in: query
+          schema:
+            type: boolean
+          description: 默认 false；调试飞书空白模板行时可传 true 返回空记录。
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/AssistantItem"
+                  count:
+                    type: integer
+  /api/items/{id}:
+    patch:
+      operationId: updateItem
+      summary: 更新事项
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssistantItemPatch"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item:
+                    $ref: "#/components/schemas/AssistantItem"
+  /api/calendar/sync:
+    post:
+      operationId: syncItemToCalendar
+      summary: 同步事项到 Google Calendar
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - item_id
+              properties:
+                item_id:
+                  type: string
+                  description: 飞书多维表 record_id。
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item:
+                    $ref: "#/components/schemas/AssistantItem"
+                  calendar_event:
+                    type: object
+                    additionalProperties: true
+        "503":
+          description: Google Calendar is not configured
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  missing_env:
+                    type: array
+                    items:
+                      type: string
+  /api/briefing/today:
+    get:
+      operationId: getTodayBriefing
+      summary: 获取当天个人助理简报数据
+      description: 只基于飞书事项池生成，不依赖 Google Calendar 配置。
+      parameters:
+        - name: date
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: 可选，YYYY-MM-DD；不传则按 APP_TIMEZONE 取今天。
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Briefing"
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    AssistantItemFields:
+      type: object
+      properties:
+        title:
+          type: string
+        category:
+          type: string
+          enum: [工作, 会议活动, 自媒体, 生活, 健康, 宠物, 消费账单, 长期项目, 其他]
+        type:
+          type: string
+          enum: [任务, 日程, 提醒, 长期项目, 待确认]
+        priority:
+          type: string
+          enum: [P0, P1, P2, P3]
+        status:
+          type: string
+          enum: [未开始, 进行中, 待确认, 等待反馈, 已完成, 已取消]
+        receive_date:
+          type: string
+          nullable: true
+        start_time:
+          type: string
+          nullable: true
+        end_time:
+          type: string
+          nullable: true
+        due_time:
+          type: string
+          nullable: true
+        location:
+          type: string
+          nullable: true
+        counterpart:
+          type: string
+          nullable: true
+        department:
+          type: string
+          nullable: true
+        deliverable:
+          type: string
+          nullable: true
+        next_action:
+          type: string
+          nullable: true
+        estimated_duration:
+          oneOf:
+            - type: string
+            - type: number
+          nullable: true
+        reminder_method:
+          type: string
+          nullable: true
+        sync_calendar:
+          type: boolean
+          nullable: true
+        calendar_event_id:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        raw_input:
+          type: string
+          nullable: true
+    AssistantItemInput:
+      allOf:
+        - $ref: "#/components/schemas/AssistantItemFields"
+        - type: object
+          required:
+            - title
+    AssistantItemPatch:
+      $ref: "#/components/schemas/AssistantItemFields"
+    AssistantItem:
+      allOf:
+        - $ref: "#/components/schemas/AssistantItemFields"
+        - type: object
+          required: [id, title, color]
+          properties:
+            id:
+              type: string
+            color:
+              type: string
+              enum: [red, green, purple, gray, blue, yellow, orange]
+            created_time:
+              type: string
+            updated_time:
+              type: string
+    TimelineEntry:
+      type: object
+      properties:
+        source:
+          type: string
+          enum: [task_pool, google_calendar]
+        title:
+          type: string
+        start_time:
+          type: string
+        end_time:
+          type: string
+        item_id:
+          type: string
+        calendar_event_id:
+          type: string
+        category:
+          type: string
+        priority:
+          type: string
+        location:
+          type: string
+        color:
+          type: string
+    Briefing:
+      type: object
+      properties:
+        date:
+          type: string
+        today_timeline:
+          type: array
+          items:
+            $ref: "#/components/schemas/TimelineEntry"
+        p0_p1_items:
+          type: array
+          items:
+            $ref: "#/components/schemas/AssistantItem"
+        due_soon_items:
+          type: array
+          items:
+            $ref: "#/components/schemas/AssistantItem"
+        pending_confirmation_items:
+          type: array
+          items:
+            $ref: "#/components/schemas/AssistantItem"
+        waiting_feedback_items:
+          type: array
+          items:
+            $ref: "#/components/schemas/AssistantItem"
+        unsynced_calendar_items:
+          type: array
+          items:
+            $ref: "#/components/schemas/AssistantItem"
+        needs_info_items:
+          type: array
+          items:
+            $ref: "#/components/schemas/NeedsInfoItem"
+    NeedsInfoItem:
+      allOf:
+        - $ref: "#/components/schemas/AssistantItem"
+        - type: object
+          properties:
+            missing_fields:
+              type: array
+              items:
+                type: string

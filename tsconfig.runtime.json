@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "outDir": ".local-build",
+    "rootDir": ".",
+    "declaration": false,
+    "sourceMap": false
+  },
+  "include": ["api/**/*.ts", "src/**/*.ts"]
+}

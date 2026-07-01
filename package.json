@@ -1,0 +1,21 @@
+{
+  "name": "personal-assistant-mvp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "npm run typecheck",
+    "dev": "npm run build:local && node .local-build/src/localServer.js",
+    "dev:vercel": "vercel dev --listen 3000",
+    "build:local": "tsc -p tsconfig.runtime.json",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.10",
+    "@vercel/node": "^3.2.21",
+    "typescript": "^5.5.4"
+  }
+}

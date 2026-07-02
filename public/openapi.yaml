@@ -4,8 +4,8 @@ info:
   version: 0.1.0
   description: ChatGPT Actions API for a personal assistant task pool backed by Feishu Bitable and Google Calendar.
 servers:
-  - url: /
-    description: Same origin as the hosted OpenAPI document.
+  - url: https://personal-assistant-mvp-theta.vercel.app
+    description: Production Vercel deployment.
 security:
   - bearerAuth: []
 paths:

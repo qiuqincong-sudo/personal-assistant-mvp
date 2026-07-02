@@ -5,7 +5,7 @@ info:
   description: ChatGPT Actions API for a personal assistant task pool backed by Feishu Bitable and Google Calendar.
 servers:
   - url: https://personal-assistant-mvp-theta.vercel.app
-    description: Production Vercel deployment.
+    description: Vercel production deployment.
 security:
   - bearerAuth: []
 paths:
@@ -237,9 +237,7 @@ components:
           type: string
           nullable: true
         estimated_duration:
-          oneOf:
-            - type: string
-            - type: number
+          type: string
           nullable: true
         reminder_method:
           type: string
@@ -257,28 +255,203 @@ components:
           type: string
           nullable: true
     AssistantItemInput:
-      allOf:
-        - $ref: "#/components/schemas/AssistantItemFields"
-        - type: object
-          required:
-            - title
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+        category:
+          type: string
+          enum: [工作, 会议活动, 自媒体, 生活, 健康, 宠物, 消费账单, 长期项目, 其他]
+        type:
+          type: string
+          enum: [任务, 日程, 提醒, 长期项目, 待确认]
+        priority:
+          type: string
+          enum: [P0, P1, P2, P3]
+        status:
+          type: string
+          enum: [未开始, 进行中, 待确认, 等待反馈, 已完成, 已取消]
+        receive_date:
+          type: string
+          nullable: true
+        start_time:
+          type: string
+          nullable: true
+        end_time:
+          type: string
+          nullable: true
+        due_time:
+          type: string
+          nullable: true
+        location:
+          type: string
+          nullable: true
+        counterpart:
+          type: string
+          nullable: true
+        department:
+          type: string
+          nullable: true
+        deliverable:
+          type: string
+          nullable: true
+        next_action:
+          type: string
+          nullable: true
+        estimated_duration:
+          type: string
+          nullable: true
+        reminder_method:
+          type: string
+          nullable: true
+        sync_calendar:
+          type: boolean
+          nullable: true
+        calendar_event_id:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        raw_input:
+          type: string
+          nullable: true
     AssistantItemPatch:
-      $ref: "#/components/schemas/AssistantItemFields"
+      type: object
+      properties:
+        title:
+          type: string
+        category:
+          type: string
+          enum: [工作, 会议活动, 自媒体, 生活, 健康, 宠物, 消费账单, 长期项目, 其他]
+        type:
+          type: string
+          enum: [任务, 日程, 提醒, 长期项目, 待确认]
+        priority:
+          type: string
+          enum: [P0, P1, P2, P3]
+        status:
+          type: string
+          enum: [未开始, 进行中, 待确认, 等待反馈, 已完成, 已取消]
+        receive_date:
+          type: string
+          nullable: true
+        start_time:
+          type: string
+          nullable: true
+        end_time:
+          type: string
+          nullable: true
+        due_time:
+          type: string
+          nullable: true
+        location:
+          type: string
+          nullable: true
+        counterpart:
+          type: string
+          nullable: true
+        department:
+          type: string
+          nullable: true
+        deliverable:
+          type: string
+          nullable: true
+        next_action:
+          type: string
+          nullable: true
+        estimated_duration:
+          type: string
+          nullable: true
+        reminder_method:
+          type: string
+          nullable: true
+        sync_calendar:
+          type: boolean
+          nullable: true
+        calendar_event_id:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        raw_input:
+          type: string
+          nullable: true
     AssistantItem:
-      allOf:
-        - $ref: "#/components/schemas/AssistantItemFields"
-        - type: object
-          required: [id, title, color]
-          properties:
-            id:
-              type: string
-            color:
-              type: string
-              enum: [red, green, purple, gray, blue, yellow, orange]
-            created_time:
-              type: string
-            updated_time:
-              type: string
+      type: object
+      required: [id, title, color]
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        category:
+          type: string
+          enum: [工作, 会议活动, 自媒体, 生活, 健康, 宠物, 消费账单, 长期项目, 其他]
+        type:
+          type: string
+          enum: [任务, 日程, 提醒, 长期项目, 待确认]
+        priority:
+          type: string
+          enum: [P0, P1, P2, P3]
+        status:
+          type: string
+          enum: [未开始, 进行中, 待确认, 等待反馈, 已完成, 已取消]
+        receive_date:
+          type: string
+          nullable: true
+        start_time:
+          type: string
+          nullable: true
+        end_time:
+          type: string
+          nullable: true
+        due_time:
+          type: string
+          nullable: true
+        location:
+          type: string
+          nullable: true
+        counterpart:
+          type: string
+          nullable: true
+        department:
+          type: string
+          nullable: true
+        deliverable:
+          type: string
+          nullable: true
+        next_action:
+          type: string
+          nullable: true
+        estimated_duration:
+          type: string
+          nullable: true
+        reminder_method:
+          type: string
+          nullable: true
+        sync_calendar:
+          type: boolean
+          nullable: true
+        calendar_event_id:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        raw_input:
+          type: string
+          nullable: true
+        color:
+          type: string
+          enum: [red, green, purple, gray, blue, yellow, orange]
+        created_time:
+          type: string
+        updated_time:
+          type: string
     TimelineEntry:
       type: object
       properties:
@@ -337,11 +510,78 @@ components:
           items:
             $ref: "#/components/schemas/NeedsInfoItem"
     NeedsInfoItem:
-      allOf:
-        - $ref: "#/components/schemas/AssistantItem"
-        - type: object
-          properties:
-            missing_fields:
-              type: array
-              items:
-                type: string
+      type: object
+      required: [id, title, color]
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        category:
+          type: string
+          enum: [工作, 会议活动, 自媒体, 生活, 健康, 宠物, 消费账单, 长期项目, 其他]
+        type:
+          type: string
+          enum: [任务, 日程, 提醒, 长期项目, 待确认]
+        priority:
+          type: string
+          enum: [P0, P1, P2, P3]
+        status:
+          type: string
+          enum: [未开始, 进行中, 待确认, 等待反馈, 已完成, 已取消]
+        receive_date:
+          type: string
+          nullable: true
+        start_time:
+          type: string
+          nullable: true
+        end_time:
+          type: string
+          nullable: true
+        due_time:
+          type: string
+          nullable: true
+        location:
+          type: string
+          nullable: true
+        counterpart:
+          type: string
+          nullable: true
+        department:
+          type: string
+          nullable: true
+        deliverable:
+          type: string
+          nullable: true
+        next_action:
+          type: string
+          nullable: true
+        estimated_duration:
+          type: string
+          nullable: true
+        reminder_method:
+          type: string
+          nullable: true
+        sync_calendar:
+          type: boolean
+          nullable: true
+        calendar_event_id:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        raw_input:
+          type: string
+          nullable: true
+        color:
+          type: string
+          enum: [red, green, purple, gray, blue, yellow, orange]
+        created_time:
+          type: string
+        updated_time:
+          type: string
+        missing_fields:
+          type: array
+          items:
+            type: string
